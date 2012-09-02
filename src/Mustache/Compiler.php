@@ -87,6 +87,14 @@ class Mustache_Compiler
                     );
                     break;
 
+                case Mustache_Tokenizer::T_QUESTION:
+                    $code .= $this->questionSection(
+                        $node[Mustache_Tokenizer::NODES],
+                        $node[Mustache_Tokenizer::NAME],
+                        $level
+                    );
+                    break;
+
                 case Mustache_Tokenizer::T_PARTIAL:
                 case Mustache_Tokenizer::T_PARTIAL_2:
                     $code .= $this->partial(
@@ -237,6 +245,30 @@ class Mustache_Compiler
         $id     = var_export($id, true);
 
         return sprintf($this->prepare(self::INVERTED_SECTION, $level), $id, $method, $id, $this->walk($nodes, $level));
+    }
+
+    const QUESTION_SECTION = '
+        // %s question section
+        $value = $context->%s(%s);
+        if (!empty($value)) {
+            %s
+        }';
+
+    /**
+     * Generate Mustache Template question section PHP source.
+     *
+     * @param array  $nodes Array of child tokens
+     * @param string $id    Section name
+     * @param int    $level
+     *
+     * @return string Generated question section PHP source code
+     */
+    private function questionSection($nodes, $id, $level)
+    {
+        $method = $this->getFindMethod($id);
+        $id     = var_export($id, true);
+
+        return sprintf($this->prepare(self::QUESTION_SECTION, $level), $id, $method, $id, $this->walk($nodes, $level));
     }
 
     const PARTIAL = '

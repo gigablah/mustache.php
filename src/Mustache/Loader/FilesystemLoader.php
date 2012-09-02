@@ -97,6 +97,10 @@ class Mustache_Loader_FilesystemLoader implements Mustache_Loader
         $fileName = $this->getFileName($name);
 
         if (!file_exists($fileName)) {
+            $fileName = $name;
+        }
+
+        if (!file_exists($fileName)) {
             throw new InvalidArgumentException('Template '.$name.' not found.');
         }
 
