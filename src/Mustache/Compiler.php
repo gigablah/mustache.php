@@ -20,6 +20,7 @@ class Mustache_Compiler
     private $sections;
     private $source;
     private $indentNextLine;
+    private $prependNextLine;
     private $customEscape;
     private $charset;
     private $pragmas;
@@ -375,8 +376,8 @@ class Mustache_Compiler
         return sprintf($this->prepare(self::FILTER, $level), $method, $filter, $msg, $this->getFilter($filters, $level));
     }
 
-    const LINE = '$buffer .= "\n";';
-    const TEXT = '$buffer .= %s%s;';
+    const LINE = 'PHP_EOL . ';
+    const TEXT = '$buffer .= %s%s%s;';
 
     /**
      * Generate Mustache Template output Buffer call PHP source.
@@ -390,10 +391,19 @@ class Mustache_Compiler
     {
         if ($text === "\n") {
             $this->indentNextLine = true;
+            $this->prependNextLine = true;
 
-            return $this->prepare(self::LINE, $level);
+            return '';
         } else {
-            return sprintf($this->prepare(self::TEXT, $level), $this->flushIndent(), var_export($text, true));
+            $output = sprintf(
+                $this->prepare(self::TEXT, $level),
+                ($this->prependNextLine ? self::LINE : ''),
+                $this->flushIndent(),
+                var_export($text, true)
+            );
+            $this->prependNextLine = false;
+
+            return $output;
         }
     }
 
