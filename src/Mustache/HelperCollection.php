@@ -12,7 +12,7 @@
 /**
  * A collection of helpers for a Mustache instance.
  */
-class Mustache_HelperCollection
+class Mustache_HelperCollection implements \IteratorAggregate
 {
     private $helpers = array();
 
@@ -164,5 +164,15 @@ class Mustache_HelperCollection
     public function isEmpty()
     {
         return empty($this->helpers);
+    }
+
+    /**
+     * Implements Traversable.
+     *
+     * @return \ArrayIterator
+     */
+    public function getIterator()
+    {
+        return new \ArrayIterator($this->helpers);
     }
 }
