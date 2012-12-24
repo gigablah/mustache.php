@@ -29,7 +29,7 @@
 class Mustache_Loader_FilesystemLoader implements Mustache_Loader
 {
     private $baseDir;
-    private $extension = '.mustache';
+    protected $extension = '.mustache';
     private $templates = array();
 
     /**
