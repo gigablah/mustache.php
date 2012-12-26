@@ -24,6 +24,7 @@ class Mustache_Tokenizer
 
     // Token types
     const T_SECTION      = '#';
+    const T_ITERATE      = ':';
     const T_INVERTED     = '^';
     const T_QUESTION     = '?';
     const T_END_SECTION  = '/';
@@ -40,6 +41,7 @@ class Mustache_Tokenizer
     // Valid token types
     private static $tagTypes = array(
         self::T_SECTION      => true,
+        self::T_ITERATE      => true,
         self::T_INVERTED     => true,
         self::T_QUESTION     => true,
         self::T_END_SECTION  => true,

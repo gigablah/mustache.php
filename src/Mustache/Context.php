@@ -59,6 +59,18 @@ class Mustache_Context
     }
 
     /**
+     * Get the second last Context frame.
+     *
+     * @return mixed Second last Context frame (object or array)
+     */
+    public function secondLast()
+    {
+        end($this->stack);
+
+        return prev($this->stack);
+    }
+
+    /**
      * Find a variable in the Context stack.
      *
      * Starting with the last Context frame (the context of the innermost section), and working back to the top-level

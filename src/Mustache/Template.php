@@ -100,15 +100,22 @@ abstract class Mustache_Template
      *         42       => array('name' => 'baz'),
      *     );
      *
-     * @param mixed $value
+     * ... unless the $iterate flag is set to true.
+     *
+     * @param mixed   $value
+     * @param boolean $iterate
      *
      * @return boolean True if the value is 'iterable'
      */
-    protected function isIterable($value)
+    protected function isIterable($value, $iterate = false)
     {
         if (is_object($value)) {
             return $value instanceof Traversable;
         } elseif (is_array($value)) {
+            if ($iterate) {
+                return true;
+            }
+
             $i = 0;
             foreach ($value as $k => $v) {
                 if ($k !== $i++) {

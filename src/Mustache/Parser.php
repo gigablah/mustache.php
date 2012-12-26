@@ -52,6 +52,7 @@ class Mustache_Parser
             } else {
                 switch ($token[Mustache_Tokenizer::TYPE]) {
                     case Mustache_Tokenizer::T_SECTION:
+                    case Mustache_Tokenizer::T_ITERATE:
                     case Mustache_Tokenizer::T_INVERTED:
                     case Mustache_Tokenizer::T_QUESTION:
                         $nodes[] = $this->buildTree($tokens, $token);

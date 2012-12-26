@@ -76,6 +76,20 @@ class Mustache_Compiler
                         $node[Mustache_Tokenizer::END],
                         $node[Mustache_Tokenizer::OTAG],
                         $node[Mustache_Tokenizer::CTAG],
+                        false,
+                        $level
+                    );
+                    break;
+
+                case Mustache_Tokenizer::T_ITERATE:
+                    $code .= $this->section(
+                        $node[Mustache_Tokenizer::NODES],
+                        $node[Mustache_Tokenizer::NAME],
+                        $node[Mustache_Tokenizer::INDEX],
+                        $node[Mustache_Tokenizer::END],
+                        $node[Mustache_Tokenizer::OTAG],
+                        $node[Mustache_Tokenizer::CTAG],
+                        true,
                         $level
                     );
                     break;
@@ -180,9 +194,11 @@ class Mustache_Compiler
                     ->loadLambda((string) call_user_func($value, $source, $this->lambdaHelper)%s)
                     ->renderInternal($context, $indent);
             } elseif (!empty($value)) {
-                $values = $this->isIterable($value) ? $value : array($value);
-                foreach ($values as $value) {
+                $values = $this->isIterable($value, %s) ? $value : array($value);
+                foreach ($values as $index => $value) {
+                    $context->push($index);
                     $context->push($value);%s
+                    $context->pop();
                     $context->pop();
                 }
             }
@@ -193,17 +209,18 @@ class Mustache_Compiler
     /**
      * Generate Mustache Template section PHP source.
      *
-     * @param array  $nodes Array of child tokens
-     * @param string $id    Section name
-     * @param int    $start Section start offset
-     * @param int    $end   Section end offset
-     * @param string $otag  Current Mustache opening tag
-     * @param string $ctag  Current Mustache closing tag
-     * @param int    $level
+     * @param array   $nodes   Array of child tokens
+     * @param string  $id      Section name
+     * @param int     $start   Section start offset
+     * @param int     $end     Section end offset
+     * @param string  $otag    Current Mustache opening tag
+     * @param string  $ctag    Current Mustache closing tag
+     * @param boolean $iterate Force iteration of hash
+     * @param int     $level
      *
      * @return string Generated section PHP source code
      */
-    private function section($nodes, $id, $start, $end, $otag, $ctag, $level)
+    private function section($nodes, $id, $start, $end, $otag, $ctag, $iterate, $level)
     {
         $method = $this->getFindMethod($id);
         $id     = var_export($id, true);
@@ -218,7 +235,14 @@ class Mustache_Compiler
         $key    = ucfirst(md5($delims."\n".$source));
 
         if (!isset($this->sections[$key])) {
-            $this->sections[$key] = sprintf($this->prepare(self::SECTION), $key, $source, $delims, $this->walk($nodes, 2));
+            $this->sections[$key] = sprintf(
+                $this->prepare(self::SECTION),
+                $key,
+                $source,
+                $delims,
+                $iterate ? 'true' : 'false',
+                $this->walk($nodes, 2)
+            );
         }
 
         return sprintf($this->prepare(self::SECTION_CALL, $level), $id, $key, $method, $id);
@@ -462,6 +486,8 @@ class Mustache_Compiler
     {
         if ($id === '.') {
             return 'last';
+        } elseif ($id === '..') {
+            return 'secondLast';
         } elseif (strpos($id, '.') === false) {
             return 'find';
         } else {
